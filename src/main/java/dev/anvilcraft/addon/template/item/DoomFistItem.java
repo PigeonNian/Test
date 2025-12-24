@@ -232,7 +232,7 @@ public class DoomFistItem extends Item {
         }
         
         // 设置冷却时间（6秒 = 120 ticks）
-        player.getCooldowns().addCooldown(this, 120);
+        player.getCooldowns().addCooldown(this, COOLDOWN_TIME);
         
         if (!level.isClientSide()) {
             AnvilCraftAddonTemplate.LOGGER.info("火箭重拳 - 蓄力时间: {}ticks, 蓄力比例: {}, 速度: {}, 伤害: {}, 击退: {}, 撞墙伤害: {}, 晕眩: {}ticks, 冷却: 6秒",
