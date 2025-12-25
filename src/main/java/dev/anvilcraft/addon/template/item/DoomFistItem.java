@@ -24,6 +24,7 @@ import java.util.UUID;
 @EventBusSubscriber(modid = AnvilCraftAddonTemplate.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public class DoomFistItem extends Item {
     public static final Map<UUID, Integer> DURATIONS = new HashMap<>();
+    public static final Map<UUID, Vec3> MOTIONS = new HashMap<>();
     public DoomFistItem(Properties properties) {
         super(properties);
     }
@@ -67,26 +68,26 @@ public class DoomFistItem extends Item {
 
     public void effect(Player player, int useDuration) {
         if (useDuration <= 5) {
-            player.setDeltaMovement(
-                player.getForward()
-                    .multiply(1.0, 0.0, 1.0)
-                    .normalize()
-                    .scale(2.5)
-                    .add(0.0, 0.0, 0.0)
-            );
+            Vec3 playerMovement = player.getForward()
+                .multiply(1.0, 0.0, 1.0)
+                .normalize()
+                .scale(2.5 * (useDuration / 30.0 + 1))
+                .add(0.0, 0.0, 0.0);
+            player.setDeltaMovement(playerMovement);
             DURATIONS.put(player.getUUID(), useDuration);
+            MOTIONS.put(player.getUUID(), playerMovement);
             player.addTag("doom_fist");
             return;
         }
         int maxDuration = Math.min(30, useDuration);
-        player.setDeltaMovement(
-            player.getForward()
-                .multiply(1.0, 0.0, 1.0)
-                .normalize()
-                .scale(2.5 * (maxDuration / 30.0 + 1))
-                .add(0.0, 0.0, 0.0)
-        );
+        Vec3 playerMovement = player.getForward()
+            .multiply(1.0, 0.0, 1.0)
+            .normalize()
+            .scale(2.5 * (maxDuration / 30.0 + 1))
+            .add(0.0, 0.0, 0.0);
+        player.setDeltaMovement(playerMovement);
         DURATIONS.put(player.getUUID(), maxDuration);
+        MOTIONS.put(player.getUUID(), playerMovement);
         player.addTag("doom_fist");
     }
 
@@ -107,7 +108,7 @@ public class DoomFistItem extends Item {
                 Vec3 motion = player.getDeltaMovement();
                 // 模拟地面摩擦力，逐渐减少水平移动速度
                 // 但保持y方向动量不变，仅影响水平移动
-                double friction = 0.97; // 类似地面摩擦系数
+                double friction = 0.84; // 类似地面摩擦系数
                 double xMotion = motion.x * friction;
                 double zMotion = motion.z * friction;
                 // 确保不会完全停止，保留最小移动速度
@@ -126,7 +127,8 @@ public class DoomFistItem extends Item {
         for (LivingEntity entity : entities) {
             if(entity.equals(player))continue;
             entity.hurt(player.damageSources().playerAttack(player), 10.0f * duration/30.0f);
-            entity.setDeltaMovement(deltaMovement.scale(0.7).add(0.0, 0.1, 0.0));
+            //entity.addTag("doom_fist");
+            entity.setDeltaMovement(MOTIONS.remove(player.getUUID()));
         }
     }
 }
