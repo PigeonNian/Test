@@ -76,7 +76,6 @@ public class DoomFistItem extends Item {
             );
             DURATIONS.put(player.getUUID(), useDuration);
             player.addTag("doom_fist");
-            player.setNoGravity(true); // 突刺过程中移除重力
             return;
         }
         int maxDuration = Math.min(30, useDuration);
@@ -89,7 +88,6 @@ public class DoomFistItem extends Item {
         );
         DURATIONS.put(player.getUUID(), maxDuration);
         player.addTag("doom_fist");
-        player.setNoGravity(true); // 突刺过程中移除重力
     }
 
     @SubscribeEvent
@@ -102,14 +100,14 @@ public class DoomFistItem extends Item {
             return;
         }
         Level level = player.level();
-        List<LivingEntity> entities = level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox());
+        List<LivingEntity> entities = level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(1.6,0.0,1.6));
         if (entities.isEmpty() || entities.size() == 1.0) {
             // 在滞空冲刺时添加类似地面的摩擦力效果
             if (!player.onGround()) {
                 Vec3 motion = player.getDeltaMovement();
                 // 模拟地面摩擦力，逐渐减少水平移动速度
                 // 但保持y方向动量不变，仅影响水平移动
-                double friction = 0.91; // 类似地面摩擦系数
+                double friction = 0.97; // 类似地面摩擦系数
                 double xMotion = motion.x * friction;
                 double zMotion = motion.z * friction;
                 // 确保不会完全停止，保留最小移动速度
@@ -121,7 +119,6 @@ public class DoomFistItem extends Item {
         }
         Vec3 deltaMovement = player.getDeltaMovement();
         player.removeTag("doom_fist");
-        player.setNoGravity(false); // 突刺结束时重新启用重力
         player.setDeltaMovement(Vec3.ZERO);
         if(level.isClientSide()) return;
         Integer duration = DURATIONS.remove(player.getUUID());
