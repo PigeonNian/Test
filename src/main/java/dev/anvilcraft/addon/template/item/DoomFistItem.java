@@ -25,6 +25,7 @@ import java.util.UUID;
 public class DoomFistItem extends Item {
     public static final Map<UUID, Integer> DURATIONS = new HashMap<>();
     public static final Map<UUID, Vec3> MOTIONS = new HashMap<>();
+
     public DoomFistItem(Properties properties) {
         super(properties);
     }
@@ -101,7 +102,7 @@ public class DoomFistItem extends Item {
             return;
         }
         Level level = player.level();
-        List<LivingEntity> entities = level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(1.6,0.0,1.6));
+        List<LivingEntity> entities = level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(1.6, 0.0, 1.6));
         if (entities.isEmpty() || entities.size() == 1.0) {
             // 在滞空冲刺时添加类似地面的摩擦力效果
             if (!player.onGround()) {
@@ -121,12 +122,12 @@ public class DoomFistItem extends Item {
         Vec3 deltaMovement = player.getDeltaMovement();
         player.removeTag("doom_fist");
         player.setDeltaMovement(Vec3.ZERO);
-        if(level.isClientSide()) return;
+        if (level.isClientSide()) return;
         Integer duration = DURATIONS.remove(player.getUUID());
         if (duration == null || duration <= 15) duration = 15;
         for (LivingEntity entity : entities) {
-            if(entity.equals(player))continue;
-            entity.hurt(player.damageSources().playerAttack(player), 10.0f * duration/30.0f);
+            if (entity.equals(player)) continue;
+            entity.hurt(player.damageSources().playerAttack(player), 10.0f * duration / 30.0f);
             //entity.addTag("doom_fist");
             entity.setDeltaMovement(MOTIONS.remove(player.getUUID()));
         }
